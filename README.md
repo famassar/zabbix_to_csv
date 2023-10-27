@@ -1,5 +1,3 @@
-# zabbix_to_csv
-
 This simple script extracts hosts from Zabbix and create a csv file.
 
 To use it:
