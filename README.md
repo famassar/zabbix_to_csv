@@ -1,6 +1,10 @@
 This simple script extracts hosts from Zabbix and create a csv file.
 
-To use it:
+**Required**
+
+requests, csv and configparser python3 modules
+
+**Usage**
 1) Insert in Zabbix a tag "Fake" (as written !) in the hosts you dont' wanto to export;
 2) Edit hte config.ini file with your Zabbix APi URl and the API token;
 
