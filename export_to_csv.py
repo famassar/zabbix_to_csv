@@ -98,6 +98,190 @@ with open("zabbix_int_data.csv", "w", newline="") as csv_file:
 
 # Close the CSV file
 csv_file.close()
+
+# Get inventory hosts from the Zabbix API
+zabbix_api_request = {
+    "jsonrpc": "2.0",
+    "method": "host.get",
+    "params": {
+        "selectTags": "extend",
+        "evaltype": 0,
+        "tags": [
+            {
+                "tag": "Fake",
+                "operator": 5
+            }
+        ],
+        "output": ["host"],
+        "selectInventory": [
+                "type",
+				"type_full",
+				"name",
+				"alias",
+				"os",
+				"os_full",
+				"os_short",
+				"serialno_a",
+				"serialno_b",
+				"tag",
+				"asset_tag",
+				"macaddress_a",
+				"macaddress_b",
+				"hardware",
+				"hardware_full",
+				"software",
+				"software_full",
+				"software_app_a",
+				"software_app_b",
+				"software_app_c",
+				"software_app_d",
+				"software_app_e",
+				"contact",
+				"location",
+				"location_lat",
+				"location_lon",
+				"notes",
+				"chassis",
+				"model",
+				"hw_arch",
+				"vendor",
+				"contract_number",
+				"installer_name",
+				"deployment_status",
+				"url_a",
+				"url_b",
+				"url_c",
+				"host_networks",
+				"host_netmask",
+				"host_router",
+				"oob_ip",
+				"oob_netmask",
+				"oob_router",
+				"date_hw_purchase",
+				"date_hw_install",
+				"date_hw_expiry",
+				"date_hw_decomm",
+				"site_address_a",
+				"site_address_b",
+				"site_address_c",
+				"site_city",
+				"site_state",
+				"site_country",
+				"site_zip",
+				"site_rack",
+				"site_notes",
+				"poc_1_name",
+				"poc_1_email",
+				"poc_1_phone_a",
+				"poc_1_phone_b",
+				"poc_1_cell",
+				"poc_1_screen",
+				"poc_1_notes",
+				"poc_2_name",
+				"poc_2_email",
+				"poc_2_phone_a",
+				"poc_2_phone_b",
+				"poc_2_cell",
+				"poc_2_screen",
+				"poc_2_notes"
+        ]
+    },
+    "id": 1
+}
+zabbix_api_response = zabbix_api_session.post(ZABBIX_API_URL, json=zabbix_api_request)
+
+# Check the Zabbix API response status code
+if zabbix_api_response.status_code != 200:
+    raise Exception("Failed to get all hosts from the Zabbix API: {}".format(zabbix_api_response.content))
+
+# Get the host data from the Zabbix API response
+zabbix_inv_data = zabbix_api_response.json()["result"]
+
+# Create a CSV file to write the Zabbix host data to
+with open("zabbix_inventory_data.csv", "w", newline="") as csv_file:
+    csv_writer = csv.writer(csv_file)
+
+    # Write the CSV header row
+    csv_writer.writerow([
+        "hostid","type","type_full","name","alias","os","os_full","os_short","serialno_a","serialno_b","tag","asset_tag","macaddress_a","macaddress_b","hardware","hardware_full","software","software_full","software_app_a","software_app_b","software_app_c","software_app_d","software_app_e","contact","location","location_lat","location_lon","notes","chassis","model","hw_arch","vendor","contract_number","installer_name","deployment_status","url_a","url_b","url_c","host_networks","host_netmask","host_router","oob_ip","oob_netmask","oob_router","date_hw_purchase","date_hw_install","date_hw_expiry","date_hw_decomm","site_address_a","site_address_b","site_address_c","site_city","site_state","site_country","site_zip","site_rack","site_notes","poc_1_name","poc_1_email","poc_1_phone_a","poc_1_phone_b","poc_1_cell","poc_1_screen","poc_1_notes","poc_2_name","poc_2_email","poc_2_phone_a","poc_2_phone_b","poc_2_cell","poc_2_screen","poc_2_notes"
+        ])
+
+    # Write the Zabbix host data to the CSV file
+    for zabbix_inv in zabbix_inv_data:
+        csv_writer.writerow([
+        zabbix_inv["hostid"],
+        zabbix_inv["inventory"]["type"],
+        zabbix_inv["inventory"]["type_full"],
+        zabbix_inv["inventory"]["name"],
+        zabbix_inv["inventory"]["alias"],
+        zabbix_inv["inventory"]["os"],
+        zabbix_inv["inventory"]["os_full"],
+        zabbix_inv["inventory"]["os_short"],
+        zabbix_inv["inventory"]["serialno_a"],
+        zabbix_inv["inventory"]["serialno_b"],
+        zabbix_inv["inventory"]["tag"],
+        zabbix_inv["inventory"]["asset_tag"],
+        zabbix_inv["inventory"]["macaddress_a"],
+        zabbix_inv["inventory"]["macaddress_b"],
+        zabbix_inv["inventory"]["hardware"],
+        zabbix_inv["inventory"]["hardware_full"],
+        zabbix_inv["inventory"]["software"],
+        zabbix_inv["inventory"]["software_full"],
+        zabbix_inv["inventory"]["software_app_a"],
+        zabbix_inv["inventory"]["software_app_b"],
+        zabbix_inv["inventory"]["software_app_c"],
+        zabbix_inv["inventory"]["software_app_d"],
+        zabbix_inv["inventory"]["software_app_e"],
+        zabbix_inv["inventory"]["contact"],
+        zabbix_inv["inventory"]["location"] ,
+        zabbix_inv["inventory"]["location_lat"],
+        zabbix_inv["inventory"]["location_lon"],
+        zabbix_inv["inventory"]["notes"],
+        zabbix_inv["inventory"]["chassis"],
+        zabbix_inv["inventory"]["model"],
+        zabbix_inv["inventory"]["hw_arch"],
+        zabbix_inv["inventory"]["vendor"],
+        zabbix_inv["inventory"]["contract_number"],
+        zabbix_inv["inventory"]["installer_name"],
+        zabbix_inv["inventory"]["deployment_status"],
+        zabbix_inv["inventory"]["url_a"],
+        zabbix_inv["inventory"]["url_b"],
+        zabbix_inv["inventory"]["url_c"],
+        zabbix_inv["inventory"]["host_networks"],
+        zabbix_inv["inventory"]["host_netmask"],
+        zabbix_inv["inventory"]["host_router"],
+        zabbix_inv["inventory"]["oob_ip"],
+        zabbix_inv["inventory"]["oob_netmask"],
+        zabbix_inv["inventory"]["oob_router"],
+        zabbix_inv["inventory"]["date_hw_purchase"],
+        zabbix_inv["inventory"]["date_hw_install"],
+        zabbix_inv["inventory"]["date_hw_expiry"],
+        zabbix_inv["inventory"]["date_hw_decomm"],
+        zabbix_inv["inventory"]["site_address_a"],
+        zabbix_inv["inventory"]["site_address_b"],
+        zabbix_inv["inventory"]["site_address_c"],
+        zabbix_inv["inventory"]["site_city"],
+        zabbix_inv["inventory"]["site_state"],
+        zabbix_inv["inventory"]["site_country"],
+        zabbix_inv["inventory"]["site_zip"],
+        zabbix_inv["inventory"]["site_rack"],
+        zabbix_inv["inventory"]["site_notes"],
+        zabbix_inv["inventory"]["poc_1_name"],
+        zabbix_inv["inventory"]["poc_1_email"],
+        zabbix_inv["inventory"]["poc_1_phone_a"],
+        zabbix_inv["inventory"]["poc_1_phone_b"],
+        zabbix_inv["inventory"]["poc_1_cell"],
+        zabbix_inv["inventory"]["poc_1_screen"],
+        zabbix_inv["inventory"]["poc_1_notes"],
+        zabbix_inv["inventory"]["poc_2_name"],
+        zabbix_inv["inventory"]["poc_2_email"],
+        zabbix_inv["inventory"]["poc_2_phone_a"],
+        zabbix_inv["inventory"]["poc_2_phone_b"],
+        zabbix_inv["inventory"]["poc_2_cell"],
+        zabbix_inv["inventory"]["poc_2_screen"],
+        zabbix_inv["inventory"]["poc_2_notes"],
+        ])
+
 ###
 import csv
 import os
@@ -149,6 +333,3 @@ os.remove(file2)
 
 print(f"Merged data written to {output_file}")
 print(f"Input files {file1} and {file2} deleted.")
-
-
-
