@@ -1,6 +1,7 @@
 import requests
 import csv
 import configparser
+import os
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -24,7 +25,7 @@ zabbix_api_request = {
         "evaltype": 0,
         "tags": [
             {
-                "tag": "Fake",
+                "tag": "Skip",
                 "operator": 5
             }
         ]
@@ -99,6 +100,56 @@ with open("zabbix_int_data.csv", "w", newline="") as csv_file:
 # Close the CSV file
 csv_file.close()
 
+###
+
+# Define the input CSV files and output file
+file1 = "zabbix_host_data.csv"
+file2 = "zabbix_int_data.csv"
+output_file = "merged_output.csv"
+
+# Define the key field (the common field to merge on)
+key_field = "hostid"  # Change this to the appropriate field name
+
+# Create dictionaries to store the data from both files
+data1 = {}
+data2 = {}
+
+# Read data from the first CSV file
+with open(file1, 'r', newline='') as csv_file1:
+    reader = csv.DictReader(csv_file1)
+    for row in reader:
+        key = row[key_field]
+        data1[key] = row
+
+# Read data from the second CSV file
+with open(file2, 'r', newline='') as csv_file2:
+    reader = csv.DictReader(csv_file2)
+    for row in reader:
+        key = row[key_field]
+        data2[key] = row
+
+# Merge the data based on the key field
+merged_data = []
+for key, row1 in data1.items():
+    if key in data2:
+        row2 = data2[key]
+        merged_row = {**row1, **row2}
+        merged_data.append(merged_row)
+
+# Write the merged data to the output file
+with open(output_file, 'w', newline='') as output_csv:
+    fieldnames = merged_data[0].keys()  # Assuming all rows have the same keys
+    writer = csv.DictWriter(output_csv, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(merged_data)
+
+# Delete the input files
+os.remove(file1)
+os.remove(file2)
+
+print(f"Merged data written to {output_file}")
+print(f"Input files {file1} and {file2} deleted.")
+
 # Get inventory hosts from the Zabbix API
 zabbix_api_request = {
     "jsonrpc": "2.0",
@@ -108,7 +159,7 @@ zabbix_api_request = {
         "evaltype": 0,
         "tags": [
             {
-                "tag": "Fake",
+                "tag": "Skip",
                 "operator": 5
             }
         ],
@@ -282,54 +333,5 @@ with open("zabbix_inventory_data.csv", "w", newline="") as csv_file:
         zabbix_inv["inventory"]["poc_2_notes"],
         ])
 
-###
-import csv
-import os
-
-# Define the input CSV files and output file
-file1 = "zabbix_host_data.csv"
-file2 = "zabbix_int_data.csv"
-output_file = "merged_output.csv"
-
-# Define the key field (the common field to merge on)
-key_field = "hostid"  # Change this to the appropriate field name
-
-# Create dictionaries to store the data from both files
-data1 = {}
-data2 = {}
-
-# Read data from the first CSV file
-with open(file1, 'r', newline='') as csv_file1:
-    reader = csv.DictReader(csv_file1)
-    for row in reader:
-        key = row[key_field]
-        data1[key] = row
-
-# Read data from the second CSV file
-with open(file2, 'r', newline='') as csv_file2:
-    reader = csv.DictReader(csv_file2)
-    for row in reader:
-        key = row[key_field]
-        data2[key] = row
-
-# Merge the data based on the key field
-merged_data = []
-for key, row1 in data1.items():
-    if key in data2:
-        row2 = data2[key]
-        merged_row = {**row1, **row2}
-        merged_data.append(merged_row)
-
-# Write the merged data to the output file
-with open(output_file, 'w', newline='') as output_csv:
-    fieldnames = merged_data[0].keys()  # Assuming all rows have the same keys
-    writer = csv.DictWriter(output_csv, fieldnames=fieldnames)
-    writer.writeheader()
-    writer.writerows(merged_data)
-
-# Delete the input files
-os.remove(file1)
-os.remove(file2)
-
-print(f"Merged data written to {output_file}")
-print(f"Input files {file1} and {file2} deleted.")
+# Close the CSV file
+csv_file.close()
